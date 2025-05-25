@@ -1,638 +1,592 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import {
-  Search,
-  Play,
-  Pause,
-  Radio,
-  Volume2,
-  Heart,
-  Loader2,
-  MapPin,
-  Star,
-  Moon,
-  Sun,
-  SkipBack,
-  SkipForward,
-  Share2,
-  Waves,
-  Clock,
-  Users,
-  Music,
-  Mic,
-  Signal,
-} from "lucide-react"
+import { useState, useEffect } from "react"
+import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/use-toast"
-import { useRadioStations } from "@/hooks/use-radio-stations"
-import type { RadioStation, ProcessedStation, RecentlyPlayed } from "@/types/radio"
-import { AudioVisualizer } from "@/components/audio-visualizer"
 
-export default function TanzaniaRadioHub() {
-  // Core State
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentStation, setCurrentStation] = useState<ProcessedStation | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [volume, setVolume] = useState([75])
-  const [favorites, setFavorites] = useState<string[]>([])
-  const [recentlyPlayed, setRecentlyPlayed] = useState<RecentlyPlayed[]>([])
-  const [isDarkMode, setIsDarkMode] = useState(true)
-  const [showVisualizer, setShowVisualizer] = useState(false)
-  const [isBuffering, setIsBuffering] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [activeCategory, setActiveCategory] = useState("all")
+export default function Home() {
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [spatialAudio, setSpatialAudio] = useState(false)
+  const [bassBoost, setBassBoost] = useState(0)
+  const [trebleBoost, setTrebleBoost] = useState(0)
+  const [noiseReduction, setNoiseReduction] = useState(false)
+  const [autoGainControl, setAutoGainControl] = useState(false)
+  const [sleepTimer, setSleepTimer] = useState<number | null>(null)
+  const [alarmTime, setAlarmTime] = useState("06:00")
+  const [voiceCommands, setVoiceCommands] = useState(false)
+  const [gestureControls, setGestureControls] = useState(false)
+  const [carMode, setCarMode] = useState(false)
+  const [socialSharing, setSocialSharing] = useState(false)
+  const [friendsActivity, setFriendsActivity] = useState(false)
+  const [liveChat, setLiveChat] = useState(false)
+  const [badgesEarned, setBadgesEarned] = useState(["early-adopter", "music-lover"])
+  const [listeningStreak, setListeningStreak] = useState(7)
+  const [totalListeningTime, setTotalListeningTime] = useState(3600)
+  const [stationsDiscovered, setStationsDiscovered] = useState(25)
+  const [countriesExplored, setCountriesExplored] = useState(["USA", "Canada", "UK"])
+  const [highContrastMode, setHighContrastMode] = useState(false)
+  const [fontSizePreference, setFontSizePreference] = useState("medium")
+  const [magnification, setMagnification] = useState(1)
+  const [reducedMotion, setReducedMotion] = useState(false)
+  const [keyboardNavigation, setKeyboardNavigation] = useState(false)
+  const [voiceNavigation, setVoiceNavigation] = useState(false)
+  const [simplifiedInterface, setSimplifiedInterface] = useState(false)
+  const [focusMode, setFocusMode] = useState(false)
+  const [audioDescriptions, setAudioDescriptions] = useState(false)
+  const [highQualityStreaming, setHighQualityStreaming] = useState(true)
+  const [adFreeExperience, setAdFreeExperience] = useState(true)
+  const [unlimitedSkips, setUnlimitedSkips] = useState(true)
+  const [exclusiveContent, setExclusiveContent] = useState(true)
+  const [customThemes, setCustomThemes] = useState(["dark", "retro"])
+  const [premiumFeatures, setPremiumFeatures] = useState(true)
+  const [prioritySupport, setPrioritySupport] = useState(true)
+  const [earlyAccess, setEarlyAccess] = useState(true)
+  const [betaTesting, setBetaTesting] = useState(true)
+  const [batteryOptimization, setBatteryOptimization] = useState(true)
+  const [networkPriority, setNetworkPriority] = useState("auto")
+  const [compressionLevel, setCompressionLevel] = useState("medium")
+  const [debugMode, setDebugMode] = useState(false)
+  const [apiAccess, setApiAccess] = useState(false)
+  const [performanceMonitoring, setPerformanceMonitoring] = useState(false)
 
-  // Refs
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const { toast } = useToast()
-
-  // Data fetching - Tanzania only
-  const { data: rawStations, isLoading, error } = useRadioStations("Tanzania")
-
-  // Categories for Tanzania stations
-  const categories = [
-    { id: "all", name: "Zote", icon: Radio, color: "from-blue-500 to-purple-500" },
-    { id: "music", name: "Muziki", icon: Music, color: "from-pink-500 to-rose-500" },
-    { id: "news", name: "Habari", icon: Mic, color: "from-orange-500 to-red-500" },
-    { id: "talk", name: "Mazungumzo", icon: Users, color: "from-green-500 to-emerald-500" },
-    { id: "local", name: "Mitaa", icon: MapPin, color: "from-teal-500 to-cyan-500" },
-  ]
-
-  // Load saved data
   useEffect(() => {
-    const savedFavorites = localStorage.getItem("tz-radio-favorites")
-    const savedRecent = localStorage.getItem("tz-radio-recent")
-    const savedPreferences = localStorage.getItem("tz-radio-preferences")
-
-    if (savedFavorites) setFavorites(JSON.parse(savedFavorites))
-    if (savedRecent) setRecentlyPlayed(JSON.parse(savedRecent))
-    if (savedPreferences) {
-      const prefs = JSON.parse(savedPreferences)
-      setVolume([prefs.volume || 75])
-      setIsDarkMode(prefs.theme !== "light")
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
     }
-  }, [])
+  }, [isDarkMode])
 
-  // Save data
-  useEffect(() => {
-    localStorage.setItem("tz-radio-favorites", JSON.stringify(favorites))
-  }, [favorites])
-
-  useEffect(() => {
-    localStorage.setItem("tz-radio-recent", JSON.stringify(recentlyPlayed))
-  }, [recentlyPlayed])
-
-  // Process Tanzania stations
-  const stations: ProcessedStation[] = rawStations
-    ? rawStations
-        .filter((station: RadioStation) => {
-          return (
-            (station.url_resolved || station.url) &&
-            (station.country?.toLowerCase().includes("tanzania") ||
-              station.name?.toLowerCase().includes("tanzania") ||
-              station.name?.toLowerCase().includes("dar") ||
-              station.name?.toLowerCase().includes("dodoma") ||
-              station.name?.toLowerCase().includes("mwanza") ||
-              station.name?.toLowerCase().includes("arusha"))
-          )
-        })
-        .map((station: RadioStation) => ({
-          id: station.stationuuid,
-          name: station.name || "Unknown Station",
-          url: station.url_resolved || station.url || "",
-          genre: station.tags || "General",
-          location: station.state || "Tanzania",
-          country: "Tanzania",
-          language: station.language || "Swahili",
-          bitrate: station.bitrate || 0,
-          codec: station.codec || "Unknown",
-          votes: station.votes || 0,
-          favicon: station.favicon || "",
-          isLive: station.lastcheckok === 1,
-          lastChecked: station.lastcheckoktime || "",
-          homepage: station.homepage || "",
-          tags: station.tags ? station.tags.split(",").map((tag) => tag.trim()) : [],
-          clickcount: station.clickcount || 0,
-          geo_lat: station.geo_lat || 0,
-          geo_long: station.geo_long || 0,
-        }))
-        .slice(0, 50)
-    : []
-
-  // Filter stations
-  const filteredStations = stations.filter((station) => {
-    const matchesSearch =
-      station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      station.genre.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesCategory =
-      activeCategory === "all" ||
-      station.genre.toLowerCase().includes(activeCategory.toLowerCase()) ||
-      (activeCategory === "talk" &&
-        (station.genre.toLowerCase().includes("talk") || station.genre.toLowerCase().includes("news"))) ||
-      (activeCategory === "local" && station.location.toLowerCase() !== "tanzania")
-
-    return matchesSearch && matchesCategory
-  })
-
-  // Audio functions
-  const handlePlay = async (station: ProcessedStation) => {
-    try {
-      setIsBuffering(true)
-
-      if (currentStation?.id === station.id && isPlaying) {
-        if (audioRef.current) {
-          audioRef.current.pause()
-        }
-        setIsPlaying(false)
-        setIsBuffering(false)
-        return
-      }
-
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.src = ""
-      }
-
-      const audio = new Audio()
-      audioRef.current = audio
-
-      audio.addEventListener("canplay", () => {
-        setIsBuffering(false)
-        setIsPlaying(true)
-      })
-      audio.addEventListener("playing", () => {
-        setIsBuffering(false)
-        setIsPlaying(true)
-      })
-      audio.addEventListener("pause", () => setIsPlaying(false))
-      audio.addEventListener("error", () => {
-        setIsBuffering(false)
-        setIsPlaying(false)
-        toast({
-          title: "Hitilafu ya Redio",
-          description: "Imeshindwa kucheza redio hii. Jaribu nyingine.",
-          variant: "destructive",
-        })
-      })
-
-      audio.volume = volume[0] / 100
-      audio.crossOrigin = "anonymous"
-      audio.src = station.url
-      setCurrentStation(station)
-
-      await audio.play()
-
-      // Add to recently played
-      const newRecent: RecentlyPlayed = {
-        station,
-        playedAt: Date.now(),
-        duration: 0,
-      }
-      setRecentlyPlayed((prev) => [newRecent, ...prev.filter((r) => r.station.id !== station.id)].slice(0, 10))
-
-      toast({
-        title: "Sasa Unacheza",
-        description: `${station.name}`,
-      })
-    } catch (error) {
-      setIsBuffering(false)
-      setIsPlaying(false)
-    }
-  }
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume[0] / 100
-    }
-  }, [volume])
-
-  const toggleFavorite = (stationId: string) => {
-    setFavorites((prev) => (prev.includes(stationId) ? prev.filter((id) => id !== stationId) : [...prev, stationId]))
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="w-20 h-20 border-4 border-purple-500/30 rounded-full animate-spin"></div>
-            <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-t-purple-500 rounded-full animate-spin"></div>
-          </div>
-          <h2 className="text-2xl font-bold text-white">Kupakia Redio za Tanzania...</h2>
-          <p className="text-purple-200">Tunapata redio zilizo bora zaidi</p>
-        </div>
-      </div>
+  const setSleepTimerFunction = (minutes: number) => {
+    setSleepTimer(minutes)
+    setTimeout(
+      () => {
+        alert("Sleep timer finished!")
+        setSleepTimer(null)
+      },
+      minutes * 60 * 1000,
     )
+  }
+
+  const setAlarmFunction = (time: string) => {
+    const [hours, minutes] = time.split(":").map(Number)
+    const now = new Date()
+    const alarm = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0)
+
+    if (alarm <= now) {
+      alarm.setDate(alarm.getDate() + 1)
+    }
+
+    const timeToAlarm = alarm.getTime() - now.getTime()
+
+    setTimeout(() => {
+      alert("Wake up!")
+    }, timeToAlarm)
+  }
+
+  const enableCarMode = () => {
+    setCarMode(true)
+    alert("Car mode enabled! Some features may be limited for safety.")
   }
 
   return (
     <div
-      className={`min-h-screen ${isDarkMode ? "bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900" : "bg-gradient-to-br from-gray-50 via-purple-50 to-gray-50"}`}
+      className={`${isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"} min-h-screen flex flex-col`}
     >
-      {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-sm"></div>
-        <div className="relative container mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl">
-                  <Radio className="w-8 h-8 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                </div>
-              </div>
-              <div>
-                <h1
-                  className={`text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent`}
-                >
-                  Tanzania Radio
-                </h1>
-                <p className={`${isDarkMode ? "text-purple-200" : "text-purple-700"} text-lg`}>
-                  Redio Bora za Kitanzania
-                </p>
-              </div>
-            </div>
+      <header className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold">Music App</h1>
+        <Button onClick={() => setIsDarkMode(!isDarkMode)}>{isDarkMode ? "Light Mode" : "Dark Mode"}</Button>
+      </header>
 
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="p-3 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20"
-              >
-                {isDarkMode ? (
-                  <Sun className="w-5 h-5 text-yellow-400" />
-                ) : (
-                  <Moon className="w-5 h-5 text-purple-600" />
-                )}
-              </Button>
+      <main className="container mx-auto p-6 flex-grow">
+        <p>Welcome to the music app! Explore the features below.</p>
+      </main>
 
-              <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20">
-                <Signal className="w-4 h-4 text-green-400" />
-                <span className={`text-sm font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                  {filteredStations.length} Stations
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="relative max-w-2xl mx-auto mb-8">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl blur-xl"></div>
-            <div className="relative">
-              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
-              <Input
-                type="text"
-                placeholder="Tafuta redio yako..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`pl-14 pr-6 py-4 text-lg ${isDarkMode ? "bg-white/10 border-white/20 text-white placeholder-purple-200" : "bg-white/80 border-purple-200 text-gray-900 placeholder-purple-600"} rounded-2xl backdrop-blur-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-              />
-            </div>
-          </div>
-
-          {/* Categories */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            {categories.map((category) => {
-              const Icon = category.icon
-              const isActive = activeCategory === category.id
-              return (
-                <Button
-                  key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
-                    isActive
-                      ? `bg-gradient-to-r ${category.color} text-white shadow-lg scale-105`
-                      : `${isDarkMode ? "bg-white/10 hover:bg-white/20 text-purple-200" : "bg-white/60 hover:bg-white/80 text-purple-700"} backdrop-blur-sm border border-white/20`
-                  }`}
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {category.name}
-                </Button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Current Playing Station */}
-      {currentStation && (
-        <div className="sticky top-0 z-50 backdrop-blur-md bg-gradient-to-r from-purple-900/90 to-pink-900/90 border-b border-white/10">
-          <div className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                    {currentStation.favicon ? (
-                      <img
-                        src={currentStation.favicon || "/placeholder.svg"}
-                        alt={currentStation.name}
-                        className="w-12 h-12 rounded-lg"
-                        onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
-                      />
-                    ) : (
-                      <Radio className="w-8 h-8 text-white" />
-                    )}
-                  </div>
-                  {isBuffering && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl">
-                      <Loader2 className="w-6 h-6 text-white animate-spin" />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-bold text-white">{currentStation.name}</h3>
-                  <p className="text-purple-200">{currentStation.genre}</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <MapPin className="w-3 h-3 text-purple-300" />
-                    <span className="text-sm text-purple-300">{currentStation.location}</span>
-                    {currentStation.isLive && <Badge className="bg-red-500 text-white text-xs px-2 py-1">LIVE</Badge>}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-6">
-                {/* Volume Control */}
-                <div className="flex items-center space-x-3">
-                  <Volume2 className="w-5 h-5 text-white" />
-                  <Slider value={volume} onValueChange={setVolume} max={100} step={1} className="w-24" />
-                </div>
-
-                {/* Player Controls */}
-                <div className="flex items-center space-x-2">
-                  <Button className="p-2 rounded-lg bg-white/10 hover:bg-white/20">
-                    <SkipBack className="w-4 h-4" />
-                  </Button>
-
-                  <Button
-                    onClick={() => handlePlay(currentStation)}
-                    disabled={isBuffering}
-                    className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg"
-                  >
-                    {isBuffering ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : isPlaying ? (
-                      <Pause className="w-6 h-6" />
-                    ) : (
-                      <Play className="w-6 h-6" />
-                    )}
-                  </Button>
-
-                  <Button className="p-2 rounded-lg bg-white/10 hover:bg-white/20">
-                    <SkipForward className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Additional Controls */}
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={() => setShowVisualizer(!showVisualizer)}
-                    className={`p-2 rounded-lg ${showVisualizer ? "bg-purple-500" : "bg-white/10 hover:bg-white/20"}`}
-                  >
-                    <Waves className="w-4 h-4" />
-                  </Button>
-
-                  <Button className="p-2 rounded-lg bg-white/10 hover:bg-white/20">
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Audio Visualizer */}
-      {showVisualizer && currentStation && (
-        <div className="container mx-auto px-6 py-6">
-          <AudioVisualizer audioElement={audioRef.current} isPlaying={isPlaying} isDarkMode={isDarkMode} />
-        </div>
-      )}
-
-      {/* Main Content */}
+      {/* Advanced Features Panel */}
       <div className="container mx-auto px-6 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Audio Enhancement Features */}
           <div
             className={`${isDarkMode ? "bg-white/5" : "bg-white/60"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"}`}
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                <Radio className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                  {filteredStations.length}
-                </p>
-                <p className={`text-sm ${isDarkMode ? "text-purple-200" : "text-purple-700"}`}>Redio Zilizopo</p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`${isDarkMode ? "bg-white/5" : "bg-white/60"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"}`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                  {favorites.length}
-                </p>
-                <p className={`text-sm ${isDarkMode ? "text-purple-200" : "text-purple-700"}`}>Redio Unazopenda</p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`${isDarkMode ? "bg-white/5" : "bg-white/60"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"}`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-                <Clock className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                  {recentlyPlayed.length}
-                </p>
-                <p className={`text-sm ${isDarkMode ? "text-purple-200" : "text-purple-700"}`}>
-                  Zilizochezwa Hivi Karibuni
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`${isDarkMode ? "bg-white/5" : "bg-white/60"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"}`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>12.5K</p>
-                <p className={`text-sm ${isDarkMode ? "text-purple-200" : "text-purple-700"}`}>Wasikilizaji Wa Leo</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Station Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStations.map((station, index) => (
-            <div
-              key={station.id}
-              className={`group ${isDarkMode ? "bg-white/5 hover:bg-white/10" : "bg-white/60 hover:bg-white/80"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"} transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer`}
-              onClick={() => handlePlay(station)}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                      {station.favicon ? (
-                        <img
-                          src={station.favicon || "/placeholder.svg"}
-                          alt={station.name}
-                          className="w-12 h-12 rounded-lg"
-                          onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
-                        />
-                      ) : (
-                        <Radio className="w-8 h-8 text-white" />
-                      )}
-                    </div>
-                    {station.isLive && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-1">
-                    <h3
-                      className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-900"} group-hover:text-purple-400 transition-colors`}
-                    >
-                      {station.name}
-                    </h3>
-                    <p className={`text-sm ${isDarkMode ? "text-purple-200" : "text-purple-700"}`}>{station.genre}</p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <MapPin className="w-3 h-3 text-purple-400" />
-                      <span className={`text-xs ${isDarkMode ? "text-purple-300" : "text-purple-600"}`}>
-                        {station.location}
-                      </span>
-                      {station.votes > 0 && (
-                        <>
-                          <Star className="w-3 h-3 text-yellow-400" />
-                          <span className="text-xs text-yellow-400">{station.votes}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
+            <h3 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"} mb-4`}>
+              🎵 Audio Enhancement
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Spatial Audio</span>
                 <Button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    toggleFavorite(station.id)
-                  }}
-                  className={`p-2 rounded-lg transition-all ${
-                    favorites.includes(station.id)
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : `${isDarkMode ? "bg-white/10 hover:bg-white/20" : "bg-purple-100 hover:bg-purple-200"} text-purple-400`
-                  }`}
+                  onClick={() => setSpatialAudio(!spatialAudio)}
+                  className={`p-2 rounded-lg ${spatialAudio ? "bg-purple-500" : "bg-gray-500"}`}
                 >
-                  <Heart className="w-4 h-4" />
+                  {spatialAudio ? "ON" : "OFF"}
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Bass Boost</span>
+                <Slider
+                  value={[bassBoost]}
+                  onValueChange={(value) => setBassBoost(value[0])}
+                  max={10}
+                  min={-10}
+                  step={1}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Treble Boost</span>
+                <Slider
+                  value={[trebleBoost]}
+                  onValueChange={(value) => setTrebleBoost(value[0])}
+                  max={10}
+                  min={-10}
+                  step={1}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Noise Reduction</span>
+                <Button
+                  onClick={() => setNoiseReduction(!noiseReduction)}
+                  className={`p-2 rounded-lg ${noiseReduction ? "bg-green-500" : "bg-gray-500"}`}
+                >
+                  {noiseReduction ? "ON" : "OFF"}
                 </Button>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  {station.bitrate > 0 && (
-                    <Badge className="bg-purple-500/20 text-purple-300 text-xs">{station.bitrate}kbps</Badge>
-                  )}
-                  <Badge className="bg-green-500/20 text-green-300 text-xs">{station.codec}</Badge>
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Auto Gain Control</span>
+                <Button
+                  onClick={() => setAutoGainControl(!autoGainControl)}
+                  className={`p-2 rounded-lg ${autoGainControl ? "bg-blue-500" : "bg-gray-500"}`}
+                >
+                  {autoGainControl ? "ON" : "OFF"}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Smart Features */}
+          <div
+            className={`${isDarkMode ? "bg-white/5" : "bg-white/60"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"}`}
+          >
+            <h3 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"} mb-4`}>
+              🤖 Smart Features
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                  Sleep Timer (minutes)
+                </span>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => setSleepTimerFunction(15)}
+                    className="bg-purple-500 text-white px-3 py-1 text-sm"
+                  >
+                    15
+                  </Button>
+                  <Button
+                    onClick={() => setSleepTimerFunction(30)}
+                    className="bg-purple-500 text-white px-3 py-1 text-sm"
+                  >
+                    30
+                  </Button>
+                  <Button
+                    onClick={() => setSleepTimerFunction(60)}
+                    className="bg-purple-500 text-white px-3 py-1 text-sm"
+                  >
+                    60
+                  </Button>
+                </div>
+                {sleepTimer && <p className="text-green-400 text-sm">Sleep timer set for {sleepTimer} minutes</p>}
+              </div>
+
+              <div className="space-y-2">
+                <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Wake-up Alarm</span>
+                <Input
+                  type="time"
+                  value={alarmTime}
+                  onChange={(e) => setAlarmTime(e.target.value)}
+                  className={`${isDarkMode ? "bg-white/10 border-white/20 text-white" : "bg-white border-gray-300"}`}
+                />
+                <Button onClick={() => setAlarmFunction(alarmTime)} className="bg-orange-500 text-white w-full">
+                  Set Alarm
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Voice Commands</span>
+                <Button
+                  onClick={() => setVoiceCommands(!voiceCommands)}
+                  className={`p-2 rounded-lg ${voiceCommands ? "bg-green-500" : "bg-gray-500"}`}
+                >
+                  {voiceCommands ? "ON" : "OFF"}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Gesture Controls</span>
+                <Button
+                  onClick={() => setGestureControls(!gestureControls)}
+                  className={`p-2 rounded-lg ${gestureControls ? "bg-blue-500" : "bg-gray-500"}`}
+                >
+                  {gestureControls ? "ON" : "OFF"}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Car Mode</span>
+                <Button
+                  onClick={() => enableCarMode()}
+                  className={`p-2 rounded-lg ${carMode ? "bg-red-500" : "bg-gray-500"}`}
+                >
+                  {carMode ? "ON" : "OFF"}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Social & Community Features */}
+          <div
+            className={`${isDarkMode ? "bg-white/5" : "bg-white/60"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"}`}
+          >
+            <h3 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"} mb-4`}>
+              👥 Social & Community
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Social Sharing</span>
+                <Button
+                  onClick={() => setSocialSharing(!socialSharing)}
+                  className={`p-2 rounded-lg ${socialSharing ? "bg-blue-500" : "bg-gray-500"}`}
+                >
+                  {socialSharing ? "ON" : "OFF"}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Friends Activity</span>
+                <Button
+                  onClick={() => setFriendsActivity(!friendsActivity)}
+                  className={`p-2 rounded-lg ${friendsActivity ? "bg-green-500" : "bg-gray-500"}`}
+                >
+                  {friendsActivity ? "ON" : "OFF"}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Live Chat</span>
+                <Button
+                  onClick={() => setLiveChat(!liveChat)}
+                  className={`p-2 rounded-lg ${liveChat ? "bg-purple-500" : "bg-gray-500"}`}
+                >
+                  {liveChat ? "ON" : "OFF"}
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Achievement Badges</span>
+                <div className="flex flex-wrap gap-2">
+                  {badgesEarned.map((badge, index) => (
+                    <Badge key={index} className="bg-yellow-500 text-white">
+                      {badge.replace("-", " ").toUpperCase()}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Listening Stats</span>
+                <div className="text-xs space-y-1">
+                  <p>Streak: {listeningStreak} days</p>
+                  <p>Total Time: {Math.floor(totalListeningTime / 60)} hours</p>
+                  <p>Stations Discovered: {stationsDiscovered}</p>
+                  <p>Countries Explored: {countriesExplored.length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Accessibility Features */}
+        <div
+          className={`mt-8 ${isDarkMode ? "bg-white/5" : "bg-white/60"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"}`}
+        >
+          <h3 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"} mb-4`}>
+            ♿ Accessibility Features
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-4">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Visual</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>High Contrast</span>
+                  <Button
+                    onClick={() => setHighContrastMode(!highContrastMode)}
+                    className={`p-1 rounded ${highContrastMode ? "bg-yellow-500" : "bg-gray-500"}`}
+                  >
+                    {highContrastMode ? "ON" : "OFF"}
+                  </Button>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handlePlay(station)
-                    }}
-                    disabled={isBuffering && currentStation?.id === station.id}
-                    className={`p-3 rounded-xl transition-all ${
-                      currentStation?.id === station.id && isPlaying
-                        ? "bg-red-500 hover:bg-red-600"
-                        : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                    } text-white shadow-lg`}
+                <div className="space-y-1">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Font Size</span>
+                  <select
+                    value={fontSizePreference}
+                    onChange={(e) => setFontSizePreference(e.target.value as any)}
+                    className={`w-full p-2 rounded ${isDarkMode ? "bg-white/10 text-white" : "bg-white text-gray-900"}`}
                   >
-                    {currentStation?.id === station.id && isBuffering ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : currentStation?.id === station.id && isPlaying ? (
-                      <Pause className="w-5 h-5" />
-                    ) : (
-                      <Play className="w-5 h-5" />
-                    )}
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                    <option value="xl">Extra Large</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Magnification</span>
+                  <Slider
+                    value={[magnification]}
+                    onValueChange={(value) => setMagnification(value[0])}
+                    max={3}
+                    min={1}
+                    step={0.1}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Motor</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Reduced Motion</span>
+                  <Button
+                    onClick={() => setReducedMotion(!reducedMotion)}
+                    className={`p-1 rounded ${reducedMotion ? "bg-green-500" : "bg-gray-500"}`}
+                  >
+                    {reducedMotion ? "ON" : "OFF"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                    Keyboard Navigation
+                  </span>
+                  <Button
+                    onClick={() => setKeyboardNavigation(!keyboardNavigation)}
+                    className={`p-1 rounded ${keyboardNavigation ? "bg-blue-500" : "bg-gray-500"}`}
+                  >
+                    {keyboardNavigation ? "ON" : "OFF"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Voice Navigation</span>
+                  <Button
+                    onClick={() => setVoiceNavigation(!voiceNavigation)}
+                    className={`p-1 rounded ${voiceNavigation ? "bg-purple-500" : "bg-gray-500"}`}
+                  >
+                    {voiceNavigation ? "ON" : "OFF"}
                   </Button>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* No stations found */}
-        {filteredStations.length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Radio className="w-12 h-12 text-white" />
-            </div>
-            <h3 className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"} mb-2`}>
-              Hakuna Redio Zilizopatikana
-            </h3>
-            <p className={`${isDarkMode ? "text-purple-200" : "text-purple-700"}`}>
-              Jaribu kutafuta kwa maneno mengine
-            </p>
-          </div>
-        )}
-      </div>
+            <div className="space-y-4">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Cognitive</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                    Simplified Interface
+                  </span>
+                  <Button
+                    onClick={() => setSimplifiedInterface(!simplifiedInterface)}
+                    className={`p-1 rounded ${simplifiedInterface ? "bg-orange-500" : "bg-gray-500"}`}
+                  >
+                    {simplifiedInterface ? "ON" : "OFF"}
+                  </Button>
+                </div>
 
-      {/* Recently Played Section */}
-      {recentlyPlayed.length > 0 && (
-        <div className="container mx-auto px-6 py-8">
-          <h2 className={`text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"} mb-6`}>
-            Zilizochezwa Hivi Karibuni
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {recentlyPlayed.slice(0, 4).map((recent) => (
-              <div
-                key={recent.station.id}
-                className={`${isDarkMode ? "bg-white/5 hover:bg-white/10" : "bg-white/60 hover:bg-white/80"} backdrop-blur-sm rounded-xl p-4 border ${isDarkMode ? "border-white/10" : "border-white/20"} transition-all duration-300 hover:scale-105 cursor-pointer`}
-                onClick={() => handlePlay(recent.station)}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                    <Radio className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"} truncate`}>
-                      {recent.station.name}
-                    </h4>
-                    <p className={`text-sm ${isDarkMode ? "text-purple-200" : "text-purple-700"} truncate`}>
-                      {recent.station.genre}
-                    </p>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Focus Mode</span>
+                  <Button
+                    onClick={() => setFocusMode(!focusMode)}
+                    className={`p-1 rounded ${focusMode ? "bg-teal-500" : "bg-gray-500"}`}
+                  >
+                    {focusMode ? "ON" : "OFF"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                    Audio Descriptions
+                  </span>
+                  <Button
+                    onClick={() => setAudioDescriptions(!audioDescriptions)}
+                    className={`p-1 rounded ${audioDescriptions ? "bg-pink-500" : "bg-gray-500"}`}
+                  >
+                    {audioDescriptions ? "ON" : "OFF"}
+                  </Button>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Premium Features */}
+        <div
+          className={`mt-8 ${isDarkMode ? "bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-yellow-700" : "bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200"} backdrop-blur-sm rounded-2xl p-6 border`}
+        >
+          <h3 className={`text-xl font-bold ${isDarkMode ? "text-yellow-400" : "text-yellow-700"} mb-4`}>
+            ⭐ Premium Features
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Audio Quality</h4>
+              <ul className="text-sm space-y-1">
+                <li className={`${highQualityStreaming ? "text-green-400" : "text-gray-500"}`}>✓ 320kbps Streaming</li>
+                <li className={`${highQualityStreaming ? "text-green-400" : "text-gray-500"}`}>✓ Lossless Audio</li>
+                <li className={`${highQualityStreaming ? "text-green-400" : "text-gray-500"}`}>✓ Spatial Audio</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Experience</h4>
+              <ul className="text-sm space-y-1">
+                <li className={`${adFreeExperience ? "text-green-400" : "text-gray-500"}`}>✓ Ad-Free Listening</li>
+                <li className={`${unlimitedSkips ? "text-green-400" : "text-gray-500"}`}>✓ Unlimited Skips</li>
+                <li className={`${exclusiveContent ? "text-green-400" : "text-gray-500"}`}>✓ Exclusive Content</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Customization</h4>
+              <ul className="text-sm space-y-1">
+                <li className={`${customThemes.length > 0 ? "text-green-400" : "text-gray-500"}`}>✓ Custom Themes</li>
+                <li className={`${premiumFeatures ? "text-green-400" : "text-gray-500"}`}>✓ Advanced EQ</li>
+                <li className={`${premiumFeatures ? "text-green-400" : "text-gray-500"}`}>✓ Unlimited Playlists</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Support</h4>
+              <ul className="text-sm space-y-1">
+                <li className={`${prioritySupport ? "text-green-400" : "text-gray-500"}`}>✓ Priority Support</li>
+                <li className={`${earlyAccess ? "text-green-400" : "text-gray-500"}`}>✓ Early Access</li>
+                <li className={`${betaTesting ? "text-green-400" : "text-gray-500"}`}>✓ Beta Features</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-6 flex space-x-4">
+            <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-2">
+              Upgrade to Premium - 15,000 TZS/month
+            </Button>
+            <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2">
+              Try Pro - 25,000 TZS/month
+            </Button>
+          </div>
+        </div>
+
+        {/* Developer & Advanced Features */}
+        <div
+          className={`mt-8 ${isDarkMode ? "bg-white/5" : "bg-white/60"} backdrop-blur-sm rounded-2xl p-6 border ${isDarkMode ? "border-white/10" : "border-white/20"}`}
+        >
+          <h3 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"} mb-4`}>
+            🔧 Advanced & Developer Features
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Performance</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                    Battery Optimization
+                  </span>
+                  <Button
+                    onClick={() => setBatteryOptimization(!batteryOptimization)}
+                    className={`p-1 rounded ${batteryOptimization ? "bg-green-500" : "bg-gray-500"}`}
+                  >
+                    {batteryOptimization ? "ON" : "OFF"}
+                  </Button>
+                </div>
+
+                <div className="space-y-1">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Network Priority</span>
+                  <select
+                    value={networkPriority}
+                    onChange={(e) => setNetworkPriority(e.target.value as any)}
+                    className={`w-full p-2 rounded ${isDarkMode ? "bg-white/10 text-white" : "bg-white text-gray-900"}`}
+                  >
+                    <option value="auto">Auto</option>
+                    <option value="wifi">WiFi Only</option>
+                    <option value="cellular">Cellular Preferred</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Compression Level</span>
+                  <select
+                    value={compressionLevel}
+                    onChange={(e) => setCompressionLevel(e.target.value as any)}
+                    className={`w-full p-2 rounded ${isDarkMode ? "bg-white/10 text-white" : "bg-white text-gray-900"}`}
+                  >
+                    <option value="none">None</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Developer Tools</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Debug Mode</span>
+                  <Button
+                    onClick={() => setDebugMode(!debugMode)}
+                    className={`p-1 rounded ${debugMode ? "bg-red-500" : "bg-gray-500"}`}
+                  >
+                    {debugMode ? "ON" : "OFF"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>API Access</span>
+                  <Button
+                    onClick={() => setApiAccess(!apiAccess)}
+                    className={`p-1 rounded ${apiAccess ? "bg-blue-500" : "bg-gray-500"}`}
+                  >
+                    {apiAccess ? "ON" : "OFF"}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                    Performance Monitoring
+                  </span>
+                  <Button
+                    onClick={() => setPerformanceMonitoring(!performanceMonitoring)}
+                    className={`p-1 rounded ${performanceMonitoring ? "bg-purple-500" : "bg-gray-500"}`}
+                  >
+                    {performanceMonitoring ? "ON" : "OFF"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer className="container mx-auto p-6 text-center">
+        <p>&copy; 2023 Music App</p>
+      </footer>
     </div>
   )
 }
