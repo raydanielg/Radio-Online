@@ -12,13 +12,11 @@ import {
   Menu,
   X,
   Radio,
-  Music,
   Users,
   Info,
   Shield,
   FileText,
   HelpCircle,
-  Star,
   Headphones,
   Wifi,
   WifiOff,
@@ -51,7 +49,6 @@ export function MobileNavigation({
 
   const menuItems = [
     { id: "offline", label: "Offline", icon: Download },
-    { id: "playlists", label: "Playlists", icon: Music },
     { id: "visualizer", label: "Visualizer", icon: Radio },
     { id: "listeners", label: "Listeners", icon: Users },
     { id: "settings", label: "Settings", icon: Settings },
@@ -59,7 +56,6 @@ export function MobileNavigation({
     { id: "privacy", label: "Privacy Policy", icon: Shield },
     { id: "terms", label: "Terms of Service", icon: FileText },
     { id: "help", label: "Help & Support", icon: HelpCircle },
-    { id: "feedback", label: "Feedback", icon: Star },
   ]
 
   const handleTabClick = (tabId: string) => {
